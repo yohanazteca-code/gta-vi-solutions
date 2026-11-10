@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>GTA 6 Leonida Map – Zoomable</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    body { margin: 0; background: #0a1e3c; font-family: system-ui, sans-serif; }
+    #map { width: 100vw; height: 100vh; }
+    .title {
+      position: absolute; top: 12px; left: 50px; z-index: 1000;
+      color: #fff; background: rgba(0,0,0,0.6);
+      padding: 6px 14px; border-radius: 6px; font-size: 15px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">GTA 6 · Leonida — scroll / pinch to zoom (levels 0–3)</div>
+  <div id="map"></div>
+  <script>
+    const map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: 0,
+      maxZoom: 3,
+      zoomSnap: 0.5,
+      attributionControl: false
+    });
+
+    // At max zoom (3) we have 8 tiles wide × 11 tiles tall
+    const tileSize = 256;
+    const maxZoom = 3;
+    const tilesX = 8;
+    const tilesY = 11;
+
+    const mapWidth  = tilesX * tileSize;
+    const mapHeight = tilesY * tileSize;
+
+    // CRS.Simple: y increases downward
+    const southWest = map.unproject([0, mapHeight], maxZoom);
+    const northEast = map.unproject([mapWidth, 0], maxZoom);
+    const bounds = L.latLngBounds(southWest, northEast);
+
+    L.tileLayer('{z}/{x}_{y}.jpg', {
+      tileSize: tileSize,
+      minZoom: 0,
+      maxZoom: maxZoom,
+      noWrap: true,
+      bounds: bounds
+    }).addTo(map);
+
+    map.setMaxBounds(bounds.pad(0.05));
+    map.fitBounds(bounds);
+    map.setZoom(1);
+  </script>
+</body>
+</html>
