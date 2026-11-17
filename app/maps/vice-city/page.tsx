@@ -23,10 +23,11 @@ const placingPinRef = useRef(false);
   } | null>(null);
 
   const [loading, setLoading] = useState(true);
-const [mode, setMode] = useState<MapMode>("height");
+const [mode, setMode] = useState<MapMode>("basemap");
 
 const [discoveryType, setDiscoveryType] = useState<"Mystery" | "Collectible">("Mystery");
 const [placingPin, setPlacingPin] = useState(false);
+const [discoveriesOpen, setDiscoveriesOpen] = useState(false);
 const [pinPosition, setPinPosition] = useState<{ x: number; z: number } | null>(null);
 const [discoveryTitle, setDiscoveryTitle] = useState("");
 const [discoveryDescription, setDiscoveryDescription] = useState("");
@@ -41,7 +42,7 @@ useEffect(() => {
   if (!mount) return;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x07110c);
+  scene.background = new THREE.Color(0x080000);
 
   const camera = new THREE.PerspectiveCamera(
     50,
@@ -455,11 +456,13 @@ basemapMesh = new THREE.Mesh(
 );
 
 basemapMesh.position.y = HEIGHT_SCALE + 2;
-basemapMesh.visible = false;
+
+// Show Leonida basemap immediately when loaded
+basemapMesh.visible = true;
+terrain.visible = false;
 
 scene.add(basemapMesh);
 basemapRef.current = basemapMesh;
-
 // Assign materials after all four exist
 materialsRef.current = {
   height: heightMaterial,
@@ -790,7 +793,7 @@ if (previewPin) {
         inset: 0,
         overflow: "hidden",
         background:
-          "#07110c",
+          "#000000",
       }}
     >
 {/* Back to Leonida */}
@@ -859,7 +862,7 @@ if (previewPin) {
           borderRadius: 12,
 
           background:
-            "rgba(7,17,12,0.86)",
+            "rgba(0, 0, 0, 0.86)",
 
           backdropFilter:
             "blur(12px)",
@@ -901,17 +904,42 @@ if (previewPin) {
 {/* -------------------------------------------------------
     DISCOVERY CONTROLS
 -------------------------------------------------------- */}
-
-<div
+<button
+  type="button"
+  onClick={() => setDiscoveriesOpen((open) => !open)}
+  aria-expanded={discoveriesOpen}
+  aria-controls="leonida-discoveries-panel"
   style={{
     position: "absolute",
     top: 175,
+    left: 16,
+    zIndex: 21,
+    padding: "12px 20px",
+    borderRadius: 10,
+    border: "1px solid rgba(255,79,200,0.6)",
+    background: "rgba(8,8,17,0.95)",
+    color: "#ff4fc8",
+    fontSize: 13,
+    fontWeight: 700,
+    letterSpacing: 1,
+    cursor: "pointer",
+    boxShadow: "0 0 15px rgba(255,79,200,0.2)",
+  }}
+>
+  {discoveriesOpen ? "✕ CLOSE DISCOVERIES" : "+ SUBMIT DISCOVERIES"}
+</button>
+{discoveriesOpen && (
+<div
+  id="leonida-discoveries-panel"
+  style={{
+    position: "absolute",
+    top: 230,
     left: 16,
     zIndex: 20,
     width: 280,
     padding: 16,
     borderRadius: 12,
-    background: "rgba(7,17,12,0.92)",
+    background: "rgba(5, 5, 5, 0.92)",
     border: "1px solid rgba(100,255,150,0.25)",
     backdropFilter: "blur(12px)",
     color: "#e2e8f0",
@@ -976,6 +1004,7 @@ if (previewPin) {
     </div>
   )}
 </div>
+)}
    {/* -------------------------------------------------------
     DISCOVERY SUBMISSION FORM
 -------------------------------------------------------- */}

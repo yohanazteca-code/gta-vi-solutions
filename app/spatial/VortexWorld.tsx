@@ -158,7 +158,6 @@ function EnergyParticles() {
     colorAttribute.needsUpdate = true;
     sizeAttribute.needsUpdate = true;
 
-    linePosition.array.set(streakPositions.current);
     linePosition.needsUpdate = true;
   });
 
@@ -2325,20 +2324,41 @@ useEffect(() => {
 }, []);
 
   const [selected, setSelected] = useState<string | null>(null);
-const [autoScroll, setAutoScroll] = useState(false);
+const [autoScroll, setAutoScroll] = useState(true);
 const [menuOpen, setMenuOpen] = useState(false);
 useEffect(() => {
   if (!autoScroll || menuOpen) return;
 
+  const AUTO_SPEED = 5.5;
+  const START_DEPTH = 85;
+  const END_DEPTH = 2.1;
+  const SLOWDOWN_START = 15;
+  const MIN_SPEED_FACTOR = 0.11;
+  const INTERVAL_MS = 100;
+
   const interval = window.setInterval(() => {
-    setDepth((current) =>
-      THREE.MathUtils.clamp(
-        current - 0.08,
-        2.1,
-        85
-      )
-    );
-  }, 16);
+    setDepth((current) => {
+      const progress = THREE.MathUtils.clamp(
+        (SLOWDOWN_START - current) /
+          (SLOWDOWN_START - END_DEPTH),
+        0,
+        1
+      );
+
+      const smooth = progress * progress * (3 - 2 * progress);
+
+      const speedFactor = THREE.MathUtils.lerp(
+        1,
+        MIN_SPEED_FACTOR,
+        smooth
+      );
+
+      const next =
+        current - AUTO_SPEED * speedFactor * (INTERVAL_MS / 1000);
+
+      return next <= END_DEPTH ? START_DEPTH : next;
+    });
+  }, INTERVAL_MS);
 
   return () => window.clearInterval(interval);
 }, [autoScroll, menuOpen]);
@@ -2548,6 +2568,36 @@ return (
       )}
     
 {/* FLOATING GTA VI LOGO + PAGE SHORTCUTS */}
+{/* VISIBLE NAVIGATION BUTTON */}
+<button
+  type="button"
+  aria-label="Toggle navigation menu"
+  aria-expanded={menuOpen}
+  onClick={() => setMenuOpen((current) => !current)}
+  style={{
+  position: "absolute",
+  top: 45,
+  right: 135,
+  zIndex: 101,
+  width: 48,
+  height: 48,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "none",
+  borderRadius: 0,
+  background: "transparent",
+  color: "#ff4fc8",
+  fontSize: 34,
+  cursor: "pointer",
+  padding: 0,
+  boxShadow: "none",
+  textShadow: "0 0 12px rgba(255,79,200,0.6)",
+}}
+>
+  ☰
+</button>
+
 <div
   style={{
     position: "absolute",
